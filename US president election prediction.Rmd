@@ -1,0 +1,403 @@
+---
+title: "Modelling and Forecasting US Presidential Election Using Support Vector Regression"
+author: Xiaomeng Gu
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      eval = FALSE,
+                      message = FALSE,
+                      warning = FALSE)
+
+pacman::p_load(tidyverse, rvest, tidymodels, e1071, doParallel, rminer, lubridate)
+```
+
+
+
+# Abstract
+
+The main object of this report is to predict the number of electoral votes for Donald Trump and Joe Biden. We present Support Vector Regression (SVR) model that focused on the Electoral College outcome for the Democratic and Republican parties. Moreover, independent variables such as GDP growth quarterly, GDP growth annually, unemployment rate, percentage of white people in the US, and the president's approval rate are considered as the possible predictors that may affect the prediction of the presidential election. The president's approval rate is identified as the most important predictor variable, and the introducing of the other variables will increase the value of residual mean square error (RMSE) and decrease the value of R-squared ($R^2$). 
+
+# Introduction
+
+The United States presidential election is among influential factors on not only the local market but also the global economy (Zolghadr et al., 2017). Nowadays, researchers pay more attention to election forecasting, and it forms a relatively new part of the discipline of political science. Predict the result of an election is neither a simple nor easy task, the mechanism of the election is complicated. However, the bipartisanship of the political system of the US makes the prediction less challenging, as the failure of the incumbent party means the success of another party (Zolghadr et al., 2017).     
+
+
+The majority of the studies make predictions based on the polls or approval rating rather than the fundamental models \footnote{Fundamental models are models that can make forecasts of the results of elections using only economic and political data.}. However, the outcome of the 2016 presidential election surprised a lot of people - not least the many political pollsters and analysts covering it (Desilver, 2017), this is due to the swing states. State-level polling was less accurate, although as editor-in-chief Nate Silver wrote after the election, it was "still within the 'normal' range of accuracy" (Skelley & Rakich, 2020). Since 2016, pollsters have adjusted their models to fix inaccuracies (Kehoe, 2020).    
+
+
+
+
+# Data
+
+We have compiled a dataset with seven predictor variables, and one response variable. All the data are available online, and the sources of data are shown in Table 1 (Appendix A). The variable, president's approval rate, is the most important predictor and the data were acquired from FiveThirtyEight. Due to the failure in 2016, they adjusted their polling average differently this year. Besides assigning weight to each poller, they adjusted state polls based on trends in national polls, adjusted for house effects, adjusted for educational attainment, and adjusted the quickly increase/decrease after major events (Silver, 2020). These adjustments make our prediction more accurate.
+
+
+
+
+# Method 
+
+Support Vector Regression (SVR) is a regression method based on Support Vector Machines (SVM). While SVMs are mostly used to perform classification by determining the maximum margin separation hyperplane between two classes, SVR tries the inverse, that is to find the optimal regression hyperplane so that most training samples lie within an $\epsilon$-margin around this hyperplane (Grimm et al., 2007). A major benefit of using SVR is that it is a non-parametric technique, that means there is no assumption of formal distribution. The output model from SVR does not depend on distributions of the underlying dependent and independent variables (Sagar, 2017). Mathematically,
+
+\begin{align*}
+\text{max}_{\beta_0, \beta_1, \dots, \beta_p, M} M \\
+\text{subject to}\ \sum_{i=1}^p \beta_j^2 = 1, \\
+y_i (\beta_0 + \beta_1 x_{i1} + \dots + \beta_p x_{ip}) > M(1 - \epsilon_i), \\
+\epsilon_i \geq 0, \sum_{i=1}^n \epsilon_i \leq C,
+\end{align*}
+where $C$ is a non-negative tuning parameter that considered as the cost of predicting a sample within or on the wrong side of the margin. The $\epsilon$ is also a non-negative tuning parameter, which is used to control the number of support vectors and training errors with default range in R to be [0, 0.2].   
+
+
+
+Zolghadr et al. (2020) compared the election forecasting using Artificial Neural Networks (ANN) and Support Vector Regression (SVR) models. This study showed the SVR model with radial basis kernel does better than ANN model with a lower residual mean square error (RMSE) as well as a lower mean absolute prediction error (MAPE) \footnote{SVM: 1. RMSE = 0.0106, 2. MAPE = 1.8645. ANN: 1. RMSE = 0.0139, 2. MAPE = 2.5862.}. The radial basis Kernel function (RBF) has been extremely beneficial in reducing error in models, it has formula as follows:
+$$K(x_i, x_k) = exp(-\gamma \sum_{j=1}^p (x_{ij} - x_{kj})^2),$$
+where $\gamma$ is a non-negative tuning parameter. Those three tuning parameters, $C, \epsilon$ and $\gamma$, were chosen using a grid search on a logarithmic scale and a second, fine-grained search in the best region (Grimm et al., 2007). 
+
+
+
+# Analysis and Discussion
+
+To predict the number of electoral votes for Donald Trump and Joe Biden, we used the proportion of electoral votes for the incumbent party from 1968 to 2016. The predictor variables we included were the political parties and the average approval rate for the presidents from 1968 to 2016. Moreover, we also tried a few transformations on the data, such as normalisation of the numeric variable and changed the categorical variable to the dummy variable. Neither of these two pre-processing methods gives us a better result.    
+
+According to the study by Zolghadr et al. (2020), the president's approval rate is the only significant variable. This conclusion is consistent with our result, as we introducing the other predictor variables, the model did worse, which means higher RMSE and lower $R^2$. Our final model \footnote{The model with political party and president's approval rate as predictors} returned the value of test RMSE equals to 0.099 and $R^2$ equals to 0.912. Then the prediction of the 2020 presidential election was made by using the average approval rate for Donald Trump (Republic) and Joe Biden (Democrat), which are 44.5 and 46.3, respectively.  
+
+
+The prediction suggests Donald Trump will win with the number of electoral votes to be 274, and Joe Biden will have the number of electoral votes to be 264. 
+
+
+
+
+
+
+
+
+
+\newpage
+
+# References
+
+Grimm, M., Kroschel, K., & Narayanan, S. (2007, April). Support vector regression for automatic recognition of spontaneous emotions in speech. In 2007 IEEE International Conference on Acoustics, Speech and Signal Processing-ICASSP'07 (Vol. 4, pp. IV-1085). IEEE.   
+
+
+Kehoe, J. (28AD, October 2020). [Review of Could the US polls get it as wrong as 2016?]. Retrieved October 30, 2020, from Financial Review website: \url{https://www.afr.com/world/north-america/could-the-us-election-polls-get-it-as-wrong-as-in-2016-20201022-p567hh}         
+
+
+
+NW, 1615 L. St, Suite 800Washington, & Inquiries, D. 20036USA202-419-4300 | M.-857-8562 | F.-419-4372 | M. (n.d.). What political pollsters learned from the 2016 election. Retrieved October 30, 2020, from Pew Research Center website: \url{https://www.pewresearch.org/fact-tank/2017/05/04/qa-political-polls-and-the-2016-election/}     
+
+
+
+Sagar, C. (2017). Building Regression Models in R using Support Vector Regression. [online] KDnuggests. Available at: \url{https://www.kdnuggets.com/2017/03/building-regression-models-support-vector-regression.html [Accessed 30 Oct. 2020]}.
+
+
+
+Silver, N. (2019, December 13). What Makes Our New 2020 Democratic Primary Polling Averages Different. Retrieved October 30, 2020, from FiveThirtyEight website: \url{https://fivethirtyeight.com/features/what-makes-our-new-2020-democratic-primary-polling-averages-different/}   
+
+
+Skelley, G. (2020, October 13). What Pollsters Have Changed Since 2016 — And What Still Worries Them About 2020. Retrieved October 30, 2020, from FiveThirtyEight website: \url{https://fivethirtyeight.com/features/what-pollsters-have-changed-since-2016-and-what-still-worries-them-about-2020/}     
+
+
+
+
+Zolghadr, M., Niaki, S. A. A., & Niaki, S. T. A. (2018). Modeling and forecasting US presidential election using learning algorithms. Journal of Industrial Engineering International, 14(3), 491-500.  
+
+
+
+
+
+
+
+
+\newpage
+# Appendix A  
+
+\renewcommand{\arraystretch}{2}
+```{r, echo=FALSE, eval= TRUE}
+Variable <- c("Percentage of electoral votes of the incumbent party",
+                 "President's approval rate",
+                 "Political party ",
+                 "GDP growth annually",
+                 "GDP growth quarterly",
+                 "Percentage of white people in the US",
+                 "Unemployment rate",
+                 "Educational attainment")
+Source <- c("https://www.britannica.com/topic/United-States-Presidential-Election-Results-1788863",
+            "https://data.fivethirtyeight.com/",
+            "https://www.britannica.com/topic/United-States-Presidential-Election-Results-1788863",
+            "https://fred.stlouisfed.org/series/A067RL1A156NBEA",
+            "https://fred.stlouisfed.org/series/A191RL1Q225SBEA",
+            "https://www.kff.org/state-category/demographics-and-the-economy/population/",
+            "https://datahub.io/core/employment-us",
+            "https://fred.stlouisfed.org/searchresults/?nasw=0&st=education%20usa&t=education&ob=sr&od=desc&types=gen")
+
+df <- cbind(Variable = Variable, Source = Source)
+df <- data.frame(df)
+library(knitr)
+library(kableExtra)
+kable(df, format="latex",align = "cc",caption = "Variables and data sources")%>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(latex_options = "scale_down") %>% 
+  kable_styling(latex_options = "hold_position")
+```
+
+
+
+
+
+
+<p>&nbsp;</p>
+
+
+# Appendix B -- R code
+
+
+```{r, echo = FALSE, eval = FALSE}
+# US presidential election result 
+web_page <- read_html("https://www.britannica.com/topic/United-States-Presidential-Election-Results-1788863")
+
+# get the table
+ele_votes <- web_page %>%
+  html_nodes("table") %>%
+  html_table(fill= TRUE)
+
+votes <- as_tibble(ele_votes[[1]], 
+                   .name_repair = "minimal")
+
+# we'd like to start from 1968 
+votes <- votes[which(votes$year == 1968)[1]:nrow(votes),]
+
+# cleaning the data
+votes <- votes %>%
+  janitor::clean_names() %>%
+  mutate(
+    political_party = case_when(
+      str_detect(political_party, "Republican") ~ "R",
+      str_detect(political_party, "Democrat") ~ "D",
+       TRUE ~ "Others"
+    )) %>%
+  filter(!str_detect(political_party, "Others"))
+
+# convert to numeric
+votes_1968 <- votes %>%
+  mutate_at(vars(electoral_votes1, popular_percentage3), as.numeric)
+
+
+
+# reorder the column
+vote_1968 <- votes_1968 %>%
+  group_by(year) %>%
+  arrange(year, political_party)
+
+
+vote_1968 <- vote_1968 %>%
+  mutate_at(vars(year, electoral_votes1,popular_percentage3), as.numeric)
+
+
+
+vote_1968$electoral_votes1[17] <- 266
+
+
+vote_1968 <- vote_1968 %>%
+  add_column(
+    vote_perc = vote_1968$electoral_votes1/538
+  )
+
+
+##### predictor variables
+
+# 1. approval rate for each party each month natioanlly?
+
+approv_data <- read_csv("./data/pres_pollaverages_1968-2016.csv")
+
+
+
+approv_data <- approv_data %>%
+  select(cycle, state, candidate_name, pct_trend_adjusted)
+
+
+approv_data_summary <- approv_data %>%
+  group_by(cycle, candidate_name) %>%
+  summarise(pct_approv_mean = mean(pct_trend_adjusted))
+
+
+
+approv_data_summary <- approv_data_summary %>%
+  add_column(
+    political_party = c("O","D","R",
+                        "D","R",
+                        "R","D", #1976
+                        "D","O","R", #1980
+                        "R","D",
+                        "R","D",
+                        "D","R","O",
+                        "D","R","O",
+                        "D","R","O",
+                        "R","D",
+                        "D","R",
+                        "D","R",
+                        "R","O","D")) %>%
+  
+    mutate(
+    political_party = case_when(
+      str_detect(political_party, "R") ~ "R",
+      str_detect(political_party, "D") ~ "D",
+       TRUE ~ "Others"
+    )) %>%
+  filter(!str_detect(political_party, "Others"))  
+
+
+
+
+approv_data_summary <- approv_data_summary %>%
+   group_by(cycle) %>% 
+   arrange(cycle,political_party)
+  
+
+df <- cbind(vote_1968, approv_rate =approv_data_summary$pct_approv_mean)
+
+
+# filter and keep the incument party
+df <- df %>%
+  group_by(year) %>%
+  filter(electoral_votes1 == max(electoral_votes1)) %>%
+  select(-c(electoral_votes1, popular_percentage3, popular_votes2))
+
+
+# annual growth rate of gdp
+gdp <- read.csv("./data/united-states-gdp-growth-rate.csv")
+gdp <- gdp[8:nrow(gdp),1:2]
+gdp$group <- rep(c(1:13),each = 4 )
+gdp <- gdp %>%
+  group_by(group) %>%
+  summarise(mean = mean(GDP.Growth....))
+
+
+df <- cbind(df, gdpc = gdp$mean)
+
+
+unemp <- read_csv("./data/umemp_csv.csv")
+
+unemp_percent <- unemp[29:69,]
+unemp_percent $index <- c(rep(c(1:10), each = 4),11)
+
+unemp_percent <- unemp_percent %>% 
+  group_by(index) %>%
+  summarise(unemp_per = mean(unemployed_percent)) 
+
+unemp_percent[c(12,13),] <- NA
+
+df <- cbind(df, unemp_rate = unemp_percent$unemp_per)
+# save csv
+write_csv(df, 'us_elec_1968-2016.csv')
+
+```
+
+
+
+
+
+
+## 1. Read in the data
+
+```{r}
+data <- read_csv("us_elec_1968-2016.csv")
+```
+
+
+## 2. Set up
+
+```{r}
+# split the data
+set.seed(2020)
+data_split <- initial_split(data, strata = political_party)
+data_train <- training(data_split)
+data_test <- testing(data_split)
+
+# set up cv and tuning parameters
+vote_cv <- vfold_cv(data_train, v = 5, strata = political_party)
+vote_grid <- grid_regular(cost(),
+                          rbf_sigma(),
+                          levels = 100)
+
+# set up recipe
+vote_recipe <-
+  recipe(vote_perc ~ political_party + approv_rate, data = data_train)
+
+# set up model
+svm_model <- svm_rbf(cost = tune(),
+                rbf_sigma = tune(),
+                mode = "regression") %>%
+  set_engine("kernlab")
+
+# make work flow
+vote_wf <- workflow() %>%
+  add_recipe(vote_recipe) %>%
+  add_model(svm_model)
+```
+
+
+
+## 3. Tuning 
+
+```{r}
+# tune the model
+doParallel::registerDoParallel()
+vote_tune <- vote_wf %>%
+  tune_grid(
+    resamples = vote_cv,
+    grid = vote_grid,
+    control = control_resamples(save_pred = TRUE)
+  )
+
+# collect the metrices
+vote_tune %>% collect_metrics()
+
+# chose the model that have lowest rmse
+best_svm <- vote_tune %>% select_best("rmse")
+
+# update work flow
+final_wf <- vote_wf %>%
+  finalize_workflow(best_svm)
+
+# fit the model
+final_svm <- 
+  final_wf %>%
+  parsnip::fit(data = data_train) %>%
+  pull_workflow_fit()
+
+# fit to the test data
+final_fit <- final_wf %>%
+  last_fit(data_split)
+
+final_fit %>%
+  collect_metrics()
+
+```
+
+
+
+## 4. Prediction
+```{r}
+# approval rate for Trump and Biden
+approv_rate_db <- read_csv("./data/presidential_poll_averages_2020.csv")
+approv_rate_db <- approv_rate_db %>%
+  mutate(
+    candidate_name = case_when(
+      str_detect(candidate_name, "Biden") ~ "Joe Biden",
+      str_detect(candidate_name, "Trump") ~ "Donald Trump"
+    ))
+
+approv_rate_db %>%
+  group_by(candidate_name) %>%
+  summarise(approv = mean(pct_trend_adjusted))
+
+# make prediction
+newdata <- tibble(political_party = c("D","R"), year = "2020", 
+                  approv_rate = c(44.5, 46.3))
+predict(final_svm, new_data = newdata)
+```
+
+
+
+
